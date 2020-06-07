@@ -1,10 +1,10 @@
 /*
 to add:
-	1) replace string with code if right after asCode
-	2) else statement
-	3) error on line _
-fixed:
+	1) else statement
+	2) line which error occurred on
+changed:
 	1) nested statements work now
+	2) userInput added
 */
 
 import java.util.*;
@@ -22,6 +22,16 @@ public class Anti_array{
   	while(true){
 	  	nextLine();
 	  }
+  }
+  static public Object getInput(){
+  	System.out.print(">>");
+  	String st = "";
+	  st = scan.nextLine();
+	  Token t = new Token(st);
+	  if(t.type.equals("bool")) return (boolean)t.value;
+	  if(t.type.equals("int")) return (int)t.value;
+	  if(t.type.equals("string")) return (String)t.value;
+	  return new Token(false);
   }
   static ArrayList<Token> getNextLine(){
   	String st = "";
@@ -106,6 +116,24 @@ public class Anti_array{
   		tokensOut.clear();
 	  	loop: for(int j = 0; j < tokens.size(); j++){
 	  		Token currentToken = tokens.get(j);
+
+	  		if(currentToken.type.equals("userInput")){
+	  			Object o = getInput();
+	  			for(int z = 0; z < j; z++) tokensOut.add(tokens.get(z));//add the numbers before the userInput
+	  			if(o instanceof String) tokensOut.add(new Token("\""+(String)o+"\""));//add the userInput
+	  			else{
+	  				if(o instanceof Boolean) tokensOut.add(new Token((Boolean)o));
+	  				else{
+	  					if(o instanceof Integer) tokensOut.add(new Token((Integer)o));
+	  					else{
+	  						throw new Error(o + "is of unknown type");
+	  					}
+	  				}
+	  			}
+  				for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
+	  			tokens = (ArrayList<Token>)(tokensOut.clone());
+	  			break loop;
+	  		}
 
 	  		if(currentToken.type.equals("parentheses") && currentToken.value.equals("(")){//this bit of code uses recession to evaluate functions in parentheses
 	  			int closingParenthesesLocation = -1;
@@ -224,6 +252,10 @@ class Token{
   		}
   		if(in.equals("if")){
   			type = "if";
+  			value = in;
+  		}
+  		if(in.equals("userInput")){
+  			type = "userInput";
   			value = in;
   		}
   		if(in.equals("|")){
@@ -536,7 +568,12 @@ class Operator{
 					}
 				}
 				else{
-					return (int)x + (int)y;
+					if(y instanceof String){
+						return ((int)x + (String)y);
+					}
+					if(y instanceof Integer){
+						return ((int)x + (int)y);
+					}
 				}
 				return 0;
 			}
