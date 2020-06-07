@@ -75,3 +75,7 @@ comments:
 	loop x = 1 | x < 101 | x ++ |
 		print ( asCode ( baseVariableName + x ) )
 	}      
+
+== links ==
+
+https://esolangs.org/wiki/Anti-Array#tokens
