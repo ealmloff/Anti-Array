@@ -12,18 +12,16 @@ import java.lang.*;
 import java.util.Scanner;
 import java.util.Arrays;
 
-// Driver class
-public class Anti_array{
+public class Anti_array{// Driver class
 	static Scanner scan = new Scanner(System.in);
 	static ArrayList<String> variableNames = new ArrayList<String>();
 	static ArrayList<Object> variableValues = new ArrayList<Object>();
-	static ArrayList<ArrayList<Token>> code = new ArrayList<ArrayList<Token>>();
-  public static void main (String[] args){
+  public static void main (String[] args){//Driver function
   	while(true){
 	  	nextLine();
 	  }
   }
-  static public Object getInput(){
+  static public Object getInput(){//gets user input (not code just int, bool, or String)
   	System.out.print(">>");
   	String st = "";
 	  st = scan.nextLine();
@@ -33,7 +31,7 @@ public class Anti_array{
 	  if(t.type.equals("string")) return (String)t.value;
 	  return new Token(false);
   }
-  static ArrayList<Token> getNextLine(){
+  static ArrayList<Token> getNextLine(){//gets one line of code from the user and turns it into an array of tokens
   	String st = "";
 	  st = scan.nextLine();
 	  ArrayList<Character> currentWord = new ArrayList<Character>();
@@ -41,10 +39,10 @@ public class Anti_array{
 	  boolean inQuotes = false;
 	  for(int i = 0; i < st.length(); i++){
 	  	char x = st.charAt(i);
-	  	if(x == '\"'){
+	  	if(x == '\"'){//keeps track of when its in quotes
 	  		inQuotes = !inQuotes;
 	  	}
-	  	if(inQuotes == false){
+	  	if(inQuotes == false){//if a space appears outside of quotes end the current String
 	  		if(x == ' '){
 		  		if(currentWord.size() != 0){
 		  			char[] tempChars = new char[currentWord.size()];
@@ -53,26 +51,26 @@ public class Anti_array{
 		  			currentWord = new ArrayList<Character>();
 		  		}
 	  		}
-	  		else currentWord.add(x);
+	  		else currentWord.add(x);//add the current character when not in quotes and the current character is not a space
 	  	}
-	  	else currentWord.add(x);
+	  	else currentWord.add(x);//add the current character when in quotes
 	  }
 
-	  char[] tempChars = new char[currentWord.size()];
+	  char[] tempChars = new char[currentWord.size()];//end the current word
 		for(int z = 0; z < currentWord.size(); z++) tempChars[z] = currentWord.get(z).charValue();
 		wordsList.add(new String(tempChars));
 		currentWord = new ArrayList<Character>();
 
 	  String[] words = wordsList.toArray(new String[wordsList.size()]);
 	  Token[] tokens = new Token[words.length];
-	  for(int i = 0; i < words.length; i++){
+	  for(int i = 0; i < words.length; i++){//turn each word into a token
 	  	//System.out.print(words[i] + ", ");
   	  tokens[i] = new Token(words[i]);
   	}
   	//System.out.println();
   	return new ArrayList<Token>(Arrays.asList(tokens));
   }
-  static ArrayList<Token> nextLine(){
+  static ArrayList<Token> nextLine(){//get, and run a line of code from the user
   	ArrayList<Token> tokens = getNextLine();
   	if(checkForStatements(tokens)) return new ArrayList<Token>();
   	return run(tokens);
@@ -83,16 +81,16 @@ public class Anti_array{
   static boolean checkForStatements(ArrayList<Token> tokens, boolean run){
   	return checkForStatements(tokens, run, null);
   }
-  static boolean checkForStatements(ArrayList<Token> tokens, boolean run, ArrayList<ArrayList<Token>> afterStatement){
+  static boolean checkForStatements(ArrayList<Token> tokens, boolean run, ArrayList<ArrayList<Token>> afterStatement){//checks for multi-line statements (loops, and if statements etc.) and runs them if run is true
   	boolean modified = false;
   	ArrayList<Token> tokensCopy = new ArrayList<Token>();
-	  if(tokens.size() > 0){
+	  if(tokens.size() > 0){//if it is not an empty array
 	  	if(tokens.get(0).type.equals("if")){//if this is the start of a if statement
 	  		ArrayList<Token> tempTokens = new ArrayList<Token>();
 	  		for(int i = 1; i < tokens.size(); i++) tempTokens.add(tokens.get(i));
 	  		if(run){
-	  			IfStatement i = IfStatement.generateNewUserDefinedIfStatement(tempTokens, afterStatement);
-	  			i.run();
+	  			IfStatement i = IfStatement.generateNewUserDefinedIfStatement(tempTokens, afterStatement);//create if statement
+	  			i.run();//run if statement
 	  		}
 	  		modified = true;
 	  	}
@@ -100,8 +98,8 @@ public class Anti_array{
 	  		ArrayList<Token> tempTokens = new ArrayList<Token>();
   			for(int i = 1; i < tokens.size(); i++) tempTokens.add(tokens.get(i));
 	  		if(run){
-	  			Loop x = Loop.generateNewUserDefinedLoop(tempTokens, afterStatement);
-	  			x.run();
+	  			Loop x = Loop.generateNewUserDefinedLoop(tempTokens, afterStatement);//create loop
+	  			x.run();//run loop
 	  		}
 	  		modified = true;
 	  	}
@@ -111,13 +109,13 @@ public class Anti_array{
   static ArrayList<Token> run(ArrayList<Token> tokens){//on ( call run(everything inside ()s)
   	Token[] pastTokens;
   	ArrayList<Token> tokensOut = new ArrayList<Token>();
-  	do{
-  		pastTokens = new Token[4];
+  	do{//loop until one token remains
+  		pastTokens = new Token[4];//store token buffer
   		tokensOut.clear();
-	  	loop: for(int j = 0; j < tokens.size(); j++){
+	  	loop: for(int j = 0; j < tokens.size(); j++){//loop over every token
 	  		Token currentToken = tokens.get(j);
 
-	  		if(currentToken.type.equals("userInput")){
+	  		if(currentToken.type.equals("userInput")){//replaces userInput with input from the user
 	  			Object o = getInput();
 	  			for(int z = 0; z < j; z++) tokensOut.add(tokens.get(z));//add the numbers before the userInput
 	  			if(o instanceof String) tokensOut.add(new Token("\""+(String)o+"\""));//add the userInput
@@ -161,13 +159,13 @@ public class Anti_array{
 	  			break loop;
 	  		}
 
-	  		for(int i = pastTokens.length-1; i >= 0; i--){
+	  		for(int i = pastTokens.length-1; i >= 0; i--){//add to token buffer
 	  			if((i+1) < pastTokens.length) pastTokens[i+1] = pastTokens[i];
 	  		}
 
 	  		pastTokens[0] = currentToken;
 	  		if(j >= 1){
-	  			if((pastTokens[1].type.equals("asCode") && (pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string")))){
+	  			if((pastTokens[1].type.equals("asCode") && (pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string")))){//interpret String after asCode as normal code
 		  			var tempString = pastTokens[0].type.equals("string") ? ((String)(pastTokens[0].value)) : ((String)(((Variable)pastTokens[0].value).get()));
 		  			//System.out.println(tempString);
 		  			tokensOut.add(new Token(tempString));
@@ -176,28 +174,28 @@ public class Anti_array{
 		  			break loop;
 		  		}
 	  		}
-		  	if(j >= 2){
-	  			if((pastTokens[2].type.equals("string") || pastTokens[2].type.equals("int") || pastTokens[2].type.equals("variable")) && pastTokens[1].type.equals("operator") && (pastTokens[0].type.equals("int") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string"))){
+		  	if(j >= 2){//replace valid operations with results
+	  			if((pastTokens[2].type.equals("string") || pastTokens[2].type.equals("int") || pastTokens[2].type.equals("variable")) && pastTokens[1].type.equals("operator") && (pastTokens[0].type.equals("int") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string"))){//for math operations
 	  				var tempObj = (((Operator)pastTokens[1].value).operate(pastTokens[2].value, pastTokens[0].value));
 		  			tokensOut.add(new Token(tempObj instanceof String ? ("\"" + (String)tempObj + "\"") : Integer.toString(((int)tempObj))));
 		  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
 		  			tokens = (ArrayList<Token>)(tokensOut.clone());
 		  			break loop;
 					}
-					if(pastTokens[2].type.equals("variable") && pastTokens[1].type.equals("setter") && (pastTokens[0].type.equals("int") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("bool") || pastTokens[0].type.equals("string"))){
+					if(pastTokens[2].type.equals("variable") && pastTokens[1].type.equals("setter") && (pastTokens[0].type.equals("int") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("bool") || pastTokens[0].type.equals("string"))){//for variable setters
 		  			tokensOut.add(new Token(((Setter)pastTokens[1].value).set(pastTokens[2].value, pastTokens[0].value)));
 		  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
 		  			tokens = (ArrayList<Token>)(tokensOut.clone());
 		  			break loop;
 					}
-					if((pastTokens[2].type.equals("string") || pastTokens[2].type.equals("int") || pastTokens[2].type.equals("variable") || pastTokens[2].type.equals("bool")) && pastTokens[1].type.equals("conditional") && (pastTokens[0].type.equals("string") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("int") || pastTokens[0].type.equals("bool"))){
+					if((pastTokens[2].type.equals("string") || pastTokens[2].type.equals("int") || pastTokens[2].type.equals("variable") || pastTokens[2].type.equals("bool")) && pastTokens[1].type.equals("conditional") && (pastTokens[0].type.equals("string") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("int") || pastTokens[0].type.equals("bool"))){//for comparing
 		  			tokensOut.add(new Token(((Conditional)pastTokens[1].value).check(pastTokens[2].value, pastTokens[0].value)));
 		  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
 		  			tokens = (ArrayList<Token>)(tokensOut.clone());
 		  			break loop;
 					}
 				}
-				if(tokens.size() == 2 && j == 1){
+				if(tokens.size() == 2 && j == 1){//preform ++ or -- if there are only two tokens
 					if(pastTokens[1].type.equals("variable") && pastTokens[0].type.equals("setter")){
 		  			tokensOut.add(new Token(((Setter)pastTokens[0].value).set(pastTokens[1].value)));
 		  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
@@ -208,20 +206,20 @@ public class Anti_array{
 	  	}
 	  }while(tokensOut.size() > 1);
 	  if(tokensOut.size() == 0) tokensOut = tokens;
-	  if(tokensOut.size() == 0) tokensOut.add(new Token(false));
+	  if(tokensOut.size() == 0) tokensOut.add(new Token(false));//make sure the list isn't empty
 	  //System.out.println("results:");
-	  if(tokensOut.size() > 0) if(tokensOut.get(0).type.equals("print")) for(int i = 1; i < tokensOut.size(); i++) System.out.println(tokens.get(i).value instanceof Variable ? (((Variable)tokensOut.get(i).value).get()) : tokensOut.get(i).value);
+	  if(tokensOut.size() > 0) if(tokensOut.get(0).type.equals("print")) for(int i = 1; i < tokensOut.size(); i++) System.out.println(tokens.get(i).value instanceof Variable ? (((Variable)tokensOut.get(i).value).get()) : tokensOut.get(i).value);//if the first token is print then print each remaining token
 	  //for(int i = 1; i < tokensOut.size(); i++) System.out.println(tokens.get(i).value instanceof Variable ? (((Variable)tokensOut.get(i).value).get()) : tokensOut.get(i).value);
 	  return tokensOut;
   }
 }
-class Token{
+class Token{//this class is the primary data structure for the program; each Token has a type and a value. the value is often a member of another class.
 	String type = "undefined";
 	Object value = "undefined";
 	static final Operator[] operators = new Operator[]{new Operator("+"), new Operator("-"), new Operator("*"), new Operator("/"), new Operator("%")};
 	static final Conditional[] conditionals = new Conditional[]{new Conditional("<"), new Conditional(">"), new Conditional("=="), new Conditional("!=")};
 	static final Setter[] setters = new Setter[]{new Setter("+="), new Setter("-="), new Setter("*="), new Setter("/="), new Setter("%="), new Setter("="), new Setter("--"), new Setter("++")};
-	public Token(String in){
+	public Token(String in){//parses a word into the correct type and value
 		try{//if int
   		int num = Integer.parseInt(in);
   		type = "int";
@@ -235,13 +233,13 @@ class Token{
   			}
   		}
   		for(Setter s : setters){
-  			if(in.equals(s.type)){//if Operator
+  			if(in.equals(s.type)){//if setters
   				type = "setter";
   				value = new Setter(in);
   			}
   		}
   		for(Conditional c : conditionals){
-  			if(in.equals(c.type)){//if Operator
+  			if(in.equals(c.type)){//if conditionals
   				type = "conditional";
   				value = new Conditional(in);
   			}
@@ -282,41 +280,41 @@ class Token{
   			type = "bool";
   			value = in.equals("true");
   		}
-  		if(in.charAt(0) == '\"' && in.charAt(in.length()-1) == '\"'){
+  		if(in.charAt(0) == '\"' && in.charAt(in.length()-1) == '\"'){//if String
   			type = "string";
   			String out = new String(in);
   			value = out.replace("\"", "");
   		}
-  		if(type.equals("undefined")){
+  		if(type.equals("undefined")){//if the type still isn't set then set it to "variable"
   			type = "variable";
   			value = new Variable(in);
   		}
   	}
 	}
-	public Token(int x){
+	public Token(int x){//if we know the type skip the longer parsing process
 		type = "int";
 		value = x;
 	}
-	public Token(boolean x){
+	public Token(boolean x){//if we know the type skip the longer parsing process
 		type = "bool";
 		value = x;
 	}
-	public Token(){}
+	public Token(){}//blank constructor
 }
-class Variable{
+class Variable{//this class stores variables. each contain a variable name and value. the value can be of any type and the type can be changed at any time.
 	String name = "undefined";
 	Object value = "unset";
 	public Variable(String namein){
 		name = namein;
-		if(findPosition() == -1){
+		if(findPosition() == -1){//if this variable hasn't been referenced before, then create add it to the global variable list
 			Anti_array.variableNames.add(name);
 			Anti_array.variableValues.add(value);
 		}
-		else{
+		else{//otherwise, find the value
 			value = Anti_array.variableValues.get(findPosition());
 		}
 	}
-	private int findPosition(){
+	private int findPosition(){//finds where in the global variable list this variable name is found. if it is not found return -1
 		int position = -1;
 		for(int i = 0; i < Anti_array.variableNames.size(); i++){
 			if(Anti_array.variableNames.get(i).equals(name)){
@@ -326,13 +324,13 @@ class Variable{
 		}
 		return position;
 	}
-	public void set(Object valuein){
+	public void set(Object valuein){//set the variable globally
 		int position = findPosition();
 		if(position == -1) throw new Error("variable doesn't exist?");
 		Anti_array.variableValues.set(position, valuein);
 		value = valuein;
 	}
-	public Object get(){
+	public Object get(){//set the variable globally
 		int position = findPosition();
 		if(position == -1) throw new Error("variable doesn't exist?");
 		return Anti_array.variableValues.get(position);
@@ -343,7 +341,7 @@ class Conditional{
 	public Conditional(String typein){
 		type = typein;
 	}
-	public boolean check(Object objX, Object objY){
+	public boolean check(Object objX, Object objY){//returns boolean result
 		Object x = 0;
 		Object y = 0;
 		if(objX instanceof Variable){//if x Variable
@@ -359,11 +357,11 @@ class Conditional{
 				x = objX;
 			}
 			else{
-				if(objX instanceof String){//if x int
+				if(objX instanceof String){//if x String
 					x = objX;
 				}
 				else{
-					if(objX instanceof Boolean){//if x int
+					if(objX instanceof Boolean){//if x boolean
 						x = objX;
 					}
 					else{
@@ -385,11 +383,11 @@ class Conditional{
 				y = objY;
 			}
 			else{
-				if(objY instanceof String){//if y int
+				if(objY instanceof String){//if y String
 					y = objY;
 				}
 				else{
-					if(objY instanceof Boolean){//if y int
+					if(objY instanceof Boolean){//if y boolean
 						y = objY;
 					}
 				}
@@ -408,7 +406,7 @@ class Conditional{
 		if(type.equals(">")){
 			return (int)x > (int)y;
 		}
-	  throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");
+	  throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");//if the program got to here then the operation must not have been checked for
 	}
 }
 class Setter{
@@ -416,7 +414,7 @@ class Setter{
 	public Setter(String typein){
 		type = typein;
 	}
-	public int set(Object objX, Object objY){
+	public int set(Object objX, Object objY){//sets the variable
 		Token x = new Token(false);
 		Token y = new Token(false);
 		if(objX instanceof Variable){//if x Variable
@@ -427,13 +425,23 @@ class Setter{
 				throw new Error("variable " + ((Variable)objX).name + " is undefined");
 			}
 		}
-		if(objY instanceof Variable){//if y Variable
+		if(objY instanceof Variable){//if y Variable then cast to the right type
 			try{
-				if((((Variable)objY).get()) instanceof Integer){
+				if((((Variable)objY).get()) instanceof Integer){//if the variable contains a int
 					y = new Token((int)(((Variable)objY).get()));
 				}
 				else{
-					y = new Token("\"" + (String)(((Variable)objY).get()) + "\"");
+					if((((Variable)objY).get()) instanceof String){//if the variable contains a String
+						y = new Token("\"" + (String)(((Variable)objY).get()) + "\"");
+					}
+					else{
+						if((((Variable)objY).get()) instanceof Boolean){//if the variable contains a boolean
+							y = new Token((Boolean)(((Variable)objY).get()));
+						}
+						else{
+							
+						}
+					}
 				}
 			}
 			catch(NullPointerException e){
@@ -445,64 +453,64 @@ class Setter{
 				y = new Token((int)objY);
 			}
 			else{
-				if(objY instanceof String){//if y int
+				if(objY instanceof String){//if y String
 					y = new Token("\"" + (String)objY + "\"");
 				}
 				else{
-					if(objY instanceof Boolean){//if y int
+					if(objY instanceof Boolean){//if y boolean
 						y = new Token((boolean)objY);
 					}
-					else{
+					else{//otherwise try just giving it the token
 						y = (Token)objY;
 					}
 				}
 			}
 		}
-		try{
+		try{//integer operations only
 			if(type.equals("-=")){
 				((Variable)x.value).set(((int)(((Variable)x.value).get()))-(int)(y).value);
-				return (int)((Variable)(x).value).get();
+				return (int)((Variable)(x).value).get();//return the new variable
 			}
 			if(type.equals("*=")){
 				((Variable)x.value).set(((int)(((Variable)x.value).get()))*(int)(y).value);
-				return (int)((Variable)(x).value).get();
+				return (int)((Variable)(x).value).get();//return the new variable
 			}
 			if(type.equals("/=")){
 				((Variable)x.value).set(((int)(((Variable)x.value).get()))/(int)(y).value);
-				return (int)((Variable)(x).value).get();
+				return (int)((Variable)(x).value).get();//return the new variable
 			}
 			if(type.equals("%=")){
 				((Variable)x.value).set(((int)(((Variable)x.value).get()))%(int)(y).value);
-				return (int)((Variable)(x).value).get();
+				return (int)((Variable)(x).value).get();//return the new variable
 			}
 		}
 		catch(NullPointerException e){
 			throw new Error("variable " + ((Variable)objX).name + " is null");
 		}
-		if(type.equals("+=")){
+		if(type.equals("+=")){//either int or String
 			if(((Variable)x.value).get() instanceof String){
 				((Variable)x.value).set((String)(((Variable)x.value).get())+((y.value instanceof String) ? (String)y.value : (int)y.value));
 			}
 			else{
 				((Variable)x.value).set(((int)(((Variable)x.value).get()))+(int)(y).value);
-				return (int)((Variable)(x).value).get();
+				return (int)((Variable)(x).value).get();//return the new variable
 			}
-			return 1;
+			return -1;//default to -1
 		}
-		if(type.equals("=")){
+		if(type.equals("=")){//all types
 			if(y.value instanceof Variable) ((Variable)(x).value).set(((Token)(((Variable)y.value).get())).value);
 			else ((Variable)(x).value).set(y.value);
 			try{
-				return (int)((Variable)x.value).get();
+				return (int)((Variable)x.value).get();//return the new variable
 			}
 			catch(Exception ex){
-				return 1;
+				return -1;//default to -1
 			}
 		}
-  	throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");
+  	throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");//if the program got to here then the operation must not have been checked defined
 	}
-	public int set(Object objX){
-		if(objX instanceof Variable){//if x variableNames
+	public int set(Object objX){//like above, but for no ++, and --
+		if(objX instanceof Variable){//if x variable
 			Variable x = (Variable)objX;
 			try{
 				if(type.equals("++")){
@@ -518,10 +526,10 @@ class Setter{
 				throw new Error("variable " + x.name + " is null or not int");
 			}
 		}
-		throw new Error("operation: " + objX.toString() + " " + type + " is undefined");
+		throw new Error("operation: " + objX.toString() + " " + type + " is undefined");//if the program got to here then the operation must not have been checked defined
 	}
 }
-class Operator{
+class Operator{//this class preforms Math operations
 	String type;
 	public Operator(String typein){
 		type = typein;
@@ -530,7 +538,7 @@ class Operator{
 		Object x = 0;
 		Object y = 0;
 		if(objX instanceof Variable){//if x variable
-			if(((Variable)objX).get() instanceof String){//if x variable
+			if(((Variable)objX).get() instanceof String){
 				x = (String)(((Variable)objX).get());
 			}
 			else{
@@ -538,17 +546,17 @@ class Operator{
 			}
 		}
 		if(objY instanceof Variable){//if y variable
-			if(((Variable)objY).get() instanceof String){//if x variable
+			if(((Variable)objY).get() instanceof String){
 				y = (String)((Variable)objY).get();
 			}
 			else{
 				y = (int)((Variable)objY).get();
 			}
 		}
-		if(objX instanceof String){//if x variable
+		if(objX instanceof String){//if x String
 			x = (String)objX;
 		}
-		if(objY instanceof String){//if y variable
+		if(objY instanceof String){//if y String
 			y = (String)objY;
 		}
 		if(objX instanceof Integer){//if x int
@@ -557,8 +565,8 @@ class Operator{
 		if(objY instanceof Integer){//if y int
 	  	y = (int)objY;
 	  }
-		try{
-			if(type.equals("+")){
+		try{//do the operations
+			if(type.equals("+")){//either add strings or integers
 				if(x instanceof String){
 					if(y instanceof String){
 						return ((String)x + (String)y);
@@ -593,14 +601,14 @@ class Operator{
 		catch(Exception ex){
 			System.out.println(ex);
 		}
-		throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");
+		throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");//if the program got to here then the operation must not have been checked defined
 	}
 }
 class Loop{
-	ArrayList<Token> assignment;
-	ArrayList<Token> condition;
-	ArrayList<Token> change;
-	ArrayList<ArrayList<Token>> toRun;
+	ArrayList<Token> assignment;//preformed once at the beginning
+	ArrayList<Token> condition;//preformed every time and must interpret to one token
+	ArrayList<Token> change;//preformed ever time at the end
+	ArrayList<ArrayList<Token>> toRun;//the code inside the brackets
 	public Loop(){
 
 	}
@@ -613,7 +621,7 @@ class Loop{
 	public static Loop generateNewUserDefinedLoop(ArrayList<Token> tokens){
 		return generateNewUserDefinedLoop(tokens, null);
 	}
-	public static Loop generateNewUserDefinedLoop(ArrayList<Token> tokens, ArrayList<ArrayList<Token>> afterStatement){
+	public static Loop generateNewUserDefinedLoop(ArrayList<Token> tokens, ArrayList<ArrayList<Token>> afterStatement){//gets code for loop from user or from afterStatement variable
 		/*if(afterStatement != null){
 			for(int w = 0; w < afterStatement.size(); w++){
 				for(int y = 0; y < afterStatement.get(w).size(); y++){
@@ -626,7 +634,7 @@ class Loop{
 		int requiredClosingBrackets = 0;
 		int tokenIndex = 0;
 		ArrayList<Token> tempTokens;
-		tempTokens = new ArrayList<Token>();
+		tempTokens = new ArrayList<Token>();//gets the assignment from tokens variable
 		do{
 			tempTokens.add(tokens.get(tokenIndex));
 			tokenIndex++;
@@ -634,7 +642,7 @@ class Loop{
 		tempTokens.remove(tempTokens.size()-1);
 		//System.out.print("assignment: ");
 		ArrayList<Token> assignmentOut = tempTokens;
-		tempTokens = new ArrayList<Token>();
+		tempTokens = new ArrayList<Token>();//gets the condition from tokens variable
 		do{
 			tempTokens.add(tokens.get(tokenIndex));
 			tokenIndex++;
@@ -642,7 +650,7 @@ class Loop{
 		tempTokens.remove(tempTokens.size()-1);
 		//System.out.print("condition: ");
 		ArrayList<Token> conditionOut = tempTokens;
-		tempTokens = new ArrayList<Token>();
+		tempTokens = new ArrayList<Token>();//gets the change from tokens variable
 		do{
 			tempTokens.add(tokens.get(tokenIndex));
 			tokenIndex++;
@@ -651,14 +659,15 @@ class Loop{
 		//System.out.print("change: ");
 		//System.out.println("{");
 		ArrayList<Token> changeOut = tempTokens;
+
 		ArrayList<Token> tokensCopy;
 		ArrayList<ArrayList<Token>> toRunOut = new ArrayList<ArrayList<Token>>();
 		//Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false);
 		int count = 1;
-		while(true){
+		while(true){//loop until this loop is closed by afterStatement or if that is null, then the user
 			if(afterStatement == null) tokensCopy = Anti_array.getNextLine();
 			else tokensCopy = afterStatement.get(count);
-  		if(Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false)){
+  		if(Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false)){//if there is a statement inside then it needs more brackets
   			requiredClosingBrackets++;
   			//System.out.println("statement detected");
   		}
@@ -675,9 +684,9 @@ class Loop{
 		}
 		return new Loop(assignmentOut, conditionOut, changeOut, toRunOut);
 	}
-	private boolean checkCondition(){
+	private boolean checkCondition(){//runs the condition and returns the result
 		var x = Anti_array.run(condition);
-		if(x.size() != 1){
+		if(x.size() != 1){//if not one token return debug info
 			x = new ArrayList<Token>();
 			x.add(new Token("print"));
 			for(int i = 0; i < condition.size(); i++){
@@ -689,12 +698,12 @@ class Loop{
 		}
 		return (x.get(0).value instanceof Boolean) ? (boolean)x.get(0).value : (boolean)((Variable)x.get(0).value).get();
 	}
-	public void run(){
-		Anti_array.run(assignment);
-		boolean continueRuning = checkCondition();
+	public void run(){//runs the loop
+		Anti_array.run(assignment);//run the assignment
+		boolean continueRuning = checkCondition();//runs the condition
 		while(continueRuning){
 			ArrayList<ArrayList<Token>> z;
-			for(int i = 0; i < toRun.size(); i++){
+			for(int i = 0; i < toRun.size(); i++){//runs the code within the loop
 				if(toRun.size() != 0){
 					z = new ArrayList<ArrayList<Token>>();
 					for(int i2 = i; i2 < toRun.size(); i2++) z.add(toRun.get(i2));
@@ -706,12 +715,12 @@ class Loop{
 						for(int indexy = 0; indexy < z.get(indexx).size(); indexy++) tempzpart1.add(z.get(indexx).get(indexy));
 						tempz.add(tempzpart1);
 					}
-					if(Anti_array.checkForStatements(toRun.get(i), true, tempz)){//don't run anything if the line is a statement until the statement ends
+					if(Anti_array.checkForStatements(toRun.get(i), true, tempz)){//if this line is a statement then run it
 						int requiredClosingBrackets = 1;
-						while(true){
+						while(true){//skip till the statement ends
 							if(i < toRun.size()){
 								i++;
-								z.remove(z.size()-1);//would think that z.remove(0) works not this, but it didn't
+								z.remove(z.size()-1);//I would think that z.remove(0) works; not this, but it didn't
 							}
 							else throw new Error("missing }");
 							if(Anti_array.checkForStatements(toRun.get(i), false)) requiredClosingBrackets++;
@@ -722,18 +731,18 @@ class Loop{
 						}
 					}
 					else{
-						Anti_array.run(toRun.get(i));
+						Anti_array.run(toRun.get(i));//if this line is not a statement then run it normally
 					}
 				}
 			}
-			Anti_array.run(change);
-			continueRuning = checkCondition();
+			Anti_array.run(change);//runs the change
+			continueRuning = checkCondition();//runs the condition
 		}
 	}
 }
 class IfStatement{
-	ArrayList<Token> condition;
-	ArrayList<ArrayList<Token>> toRun;
+	ArrayList<Token> condition;//the condition determines if the code inside will run
+	ArrayList<ArrayList<Token>> toRun;//the code inside the brackets
 	public IfStatement(ArrayList<Token> conditionIn, ArrayList<ArrayList<Token>> toRunIn){
 		condition = conditionIn;
 		toRun = toRunIn;
@@ -741,7 +750,7 @@ class IfStatement{
 	public static IfStatement generateNewUserDefinedIfStatement(ArrayList<Token> tokens){
 		return generateNewUserDefinedIfStatement(tokens, null);
 	}
-	public static IfStatement generateNewUserDefinedIfStatement(ArrayList<Token> tokens, ArrayList<ArrayList<Token>> afterStatement){
+	public static IfStatement generateNewUserDefinedIfStatement(ArrayList<Token> tokens, ArrayList<ArrayList<Token>> afterStatement){//gets code for if statement from user or from afterStatement variable
 		//System.out.print("condition: ");
 		ArrayList<ArrayList<Token>> toRunOut = new ArrayList<ArrayList<Token>>();
 		ArrayList<Token> conditionOut = tokens;
@@ -749,10 +758,10 @@ class IfStatement{
 		ArrayList<Token> tokensCopy;
 		int requiredClosingBrackets = 0;
 		int count = 1;
-		while(true){
+		while(true){//loop until this loop is closed by afterStatement or if that is null, then the user
 			if(afterStatement == null) tokensCopy = Anti_array.getNextLine();
   		else tokensCopy = afterStatement.get(count);
-  		if(Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false)){
+  		if(Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false)){//if there is a statement inside then it needs more brackets
   			requiredClosingBrackets++;
   			//System.out.println("statement detected");
   		}
@@ -768,7 +777,7 @@ class IfStatement{
 		}
 		return new IfStatement(conditionOut, toRunOut);
 	}
-	public void run(){
+	public void run(){//runs the if statement
 		boolean continueRuning;
 		var x = new ArrayList<Token>();
 		/*x.add(new Token("print"));
@@ -776,8 +785,8 @@ class IfStatement{
 			x.add(condition.get(i));
 			//System.out.println(condition.get(i).value);
 		}*/
-		x = Anti_array.run(condition);
-		if(x.size() != 1){
+		x = Anti_array.run(condition);//run the condition
+		if(x.size() != 1){//if not one token return debug info
 			x = new ArrayList<Token>();
 			x.add(new Token("print"));
 			for(int i = 0; i < condition.size(); i++){
@@ -801,12 +810,12 @@ class IfStatement{
 					for(int indexy = 0; indexy < z.get(indexx).size(); indexy++) tempzpart1.add(z.get(indexx).get(indexy));
 					tempz.add(tempzpart1);
 				}
-				if(Anti_array.checkForStatements(toRun.get(i), true, tempz)){//don't run anything if the line is a statement until the statement ends
+				if(Anti_array.checkForStatements(toRun.get(i), true, tempz)){//if this line is a statement then run it
 					int requiredClosingBrackets = 1;
-					while(true){
+					while(true){//skip till the statement ends
 						if(i < toRun.size()){
 							i++;
-							z.remove(z.size()-1);//would think that z.remove(0) works not this, but it didn't
+							z.remove(z.size()-1);//I would think that z.remove(0) works; not this, but it didn't
 						}
 						else throw new Error("missing }");
 						if(Anti_array.checkForStatements(toRun.get(i), false)) requiredClosingBrackets++;
@@ -817,7 +826,7 @@ class IfStatement{
 					}
 				}
 				else{
-					Anti_array.run(toRun.get(i));
+					Anti_array.run(toRun.get(i));//if this line is not a statement then run it normally
 				}
 			}
 		}
