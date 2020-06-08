@@ -9,12 +9,12 @@ Instead of either, it allows you to interpret a string as code. This allows you 
 
 example:
 	variableName = "var"
-loop variableNumber = 0 | variableNumber < 100 | variableNumber ++ |//loop from 1-100 and assign a variable with the name var + the variable number to the variable number
-	( asCode ( variableName + variableNumber ) ) = variableNumber
-}
-loop variableNumber = 0 | variableNumber < 100 | variableNumber ++ |// print each previously created variable
-	print ( asCode ( variableName + variableNumber ) )
-}
+	loop variableNumber = 0 | variableNumber < 100 | variableNumber ++ |//loop from 1-100 and assign a variable with the name var + the variable number to the variable number
+		( asCode ( variableName + variableNumber ) ) = variableNumber
+	}
+	loop variableNumber = 0 | variableNumber < 100 | variableNumber ++ |// print each previously created variable
+		print ( asCode ( variableName + variableNumber ) )
+	}
 
 == links ==
 
