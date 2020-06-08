@@ -5,6 +5,11 @@ to add:
 changed:
 	1) nested statements work now
 	2) userInput added
+	3) now allows multi-token strings as input to asCode
+	4) opening quotes = "{
+	5) closing quotes = }"
+	6) added \n for newline
+	7) now allows multi-line strings as input to asCode
 */
 
 import java.util.*;
@@ -21,7 +26,7 @@ public class Anti_array{// Driver class
 	  	nextLine();
 	  }
   }
-  static public Object getInput(){//gets user input (not code just int, bool, or String)
+  static public Object getInput(){//gets user input (not code just int, bool, or String )
   	System.out.print(">>");
   	String st = "";
 	  st = scan.nextLine();
@@ -31,18 +36,28 @@ public class Anti_array{// Driver class
 	  if(t.type.equals("string")) return (String)t.value;
 	  return new Token(false);
   }
-  static ArrayList<Token> getNextLine(){//gets one line of code from the user and turns it into an array of tokens
-  	String st = "";
-	  st = scan.nextLine();
-	  ArrayList<Character> currentWord = new ArrayList<Character>();
+  static ArrayList<Token> splitCode(String st){
+  	ArrayList<Character> currentWord = new ArrayList<Character>();
 	  ArrayList<String> wordsList = new ArrayList<String>();
-	  boolean inQuotes = false;
-	  for(int i = 0; i < st.length(); i++){
+	  int quotesDepth = 0;
+	  for(int i = 0; i < st.length(); i++){//keeps track of when its in quotes
 	  	char x = st.charAt(i);
-	  	if(x == '\"'){//keeps track of when its in quotes
-	  		inQuotes = !inQuotes;
-	  	}
-	  	if(inQuotes == false){//if a space appears outside of quotes end the current String
+		  if(x == '}'){
+	  		if(st.charAt(Math.min(i+1, st.length()-1)) == '\"'){
+		  		quotesDepth--;
+		  	}
+		  }
+		  if(st.charAt(Math.max(i-1, 0)) != '}'){
+		  	if(x == '\"'){
+		  		if(st.charAt(i+1) == '{'){
+			  		quotesDepth++;
+			  	}
+			  	else{
+			  		throw new Error("invalid quotes");
+			  	}
+			  }
+		  }
+	  	if(quotesDepth == 0){//if a space appears outside of quotes end the current String
 	  		if(x == ' '){
 		  		if(currentWord.size() != 0){
 		  			char[] tempChars = new char[currentWord.size()];
@@ -67,8 +82,14 @@ public class Anti_array{// Driver class
 	  	//System.out.print(words[i] + ", ");
   	  tokens[i] = new Token(words[i]);
   	}
+  	ArrayList<Token> tokensOut =  new ArrayList<Token>(Arrays.asList(tokens));
+  	return tokensOut;
+  }
+  static ArrayList<Token> getNextLine(){//gets one line of code from the user and turns it into an array of tokens
+  	String st = "";
+	  st = scan.nextLine();
   	//System.out.println();
-  	return new ArrayList<Token>(Arrays.asList(tokens));
+  	return splitCode(st);
   }
   static ArrayList<Token> nextLine(){//get, and run a line of code from the user
   	ArrayList<Token> tokens = getNextLine();
@@ -109,7 +130,7 @@ public class Anti_array{// Driver class
   static ArrayList<Token> run(ArrayList<Token> tokens){//on ( call run(everything inside ()s)
   	Token[] pastTokens;
   	ArrayList<Token> tokensOut = new ArrayList<Token>();
-  	do{//loop until one token remains
+  	forever: do{//loop until one token remains
   		pastTokens = new Token[4];//store token buffer
   		tokensOut.clear();
 	  	loop: for(int j = 0; j < tokens.size(); j++){//loop over every token
@@ -118,7 +139,7 @@ public class Anti_array{// Driver class
 	  		if(currentToken.type.equals("userInput")){//replaces userInput with input from the user
 	  			Object o = getInput();
 	  			for(int z = 0; z < j; z++) tokensOut.add(tokens.get(z));//add the numbers before the userInput
-	  			if(o instanceof String) tokensOut.add(new Token("\""+(String)o+"\""));//add the userInput
+	  			if(o instanceof String) tokensOut.add(new Token("\"{"+(String)o+"}\""));//add the userInput
 	  			else{
 	  				if(o instanceof Boolean) tokensOut.add(new Token((Boolean)o));
 	  				else{
@@ -168,16 +189,57 @@ public class Anti_array{// Driver class
 	  			if((pastTokens[1].type.equals("asCode") && (pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string")))){//interpret String after asCode as normal code
 		  			var tempString = pastTokens[0].type.equals("string") ? ((String)(pastTokens[0].value)) : ((String)(((Variable)pastTokens[0].value).get()));
 		  			//System.out.println(tempString);
-		  			tokensOut.add(new Token(tempString));
-		  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
-		  			tokens = (ArrayList<Token>)(tokensOut.clone());
-		  			break loop;
+						String[] tempStringArray = tempString.split("\\\\n");
+						if(tempStringArray.length == 1){//if there is no newline then 
+							ArrayList<Token> tempTokens = splitCode(tempStringArray[0]);
+			  			for(int i = 0; i < tempTokens.size(); i++) tokensOut.add(tempTokens.get(i));//adds each token to the token list
+			  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));//adds all tokens after to the token list
+			  			tokens = (ArrayList<Token>)(tokensOut.clone());
+			  			break loop;
+						}
+						ArrayList<ArrayList<Token>> tempTokens = new ArrayList<ArrayList<Token>>();
+						for(int s = 0; s < tempStringArray.length; s++){
+			  			tempTokens.add(splitCode(tempStringArray[s]));
+			  			//System.out.println(tempStringArray[s]);
+			  		}
+		  			ArrayList<ArrayList<Token>> z;
+						for(int i = 0; i < tempTokens.size(); i++){//runs the code within the string
+							if(tempTokens.size() != 0){
+								z = new ArrayList<ArrayList<Token>>();
+								for(int i2 = i; i2 < tempTokens.size(); i2++) z.add(tempTokens.get(i2));
+								ArrayList<ArrayList<Token>> tempz = new ArrayList<ArrayList<Token>>();
+								for(int indexx = 0; indexx < z.size(); indexx++){
+									ArrayList<Token> tempzpart1 = new ArrayList<Token>();
+									for(int indexy = 0; indexy < z.get(indexx).size(); indexy++) tempzpart1.add(z.get(indexx).get(indexy));
+									tempz.add(tempzpart1);
+								}
+								if(Anti_array.checkForStatements(tempTokens.get(i), true, tempz)){//if this line is a statement then run it
+									int requiredClosingBrackets = 1;
+									while(true){//skip till the statement ends
+										if(i < tempTokens.size()){
+											i++;
+											z.remove(z.size()-1);//I would think that z.remove(0) works; not this, but it didn't
+										}
+										else throw new Error("missing }");
+										if(Anti_array.checkForStatements(tempTokens.get(i), false)) requiredClosingBrackets++;
+										if(tempTokens.get(i).get(0).value.equals("}")){
+											requiredClosingBrackets--;
+											if(requiredClosingBrackets == 0) break;
+										}
+									}
+								}
+								else{
+									Anti_array.run(tempTokens.get(i));//if this line is not a statement then run it normally
+								}
+							}
+						}
+		  			break forever;
 		  		}
 	  		}
 		  	if(j >= 2){//replace valid operations with results
 	  			if((pastTokens[2].type.equals("string") || pastTokens[2].type.equals("int") || pastTokens[2].type.equals("variable")) && pastTokens[1].type.equals("operator") && (pastTokens[0].type.equals("int") || pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string"))){//for math operations
 	  				var tempObj = (((Operator)pastTokens[1].value).operate(pastTokens[2].value, pastTokens[0].value));
-		  			tokensOut.add(new Token(tempObj instanceof String ? ("\"" + (String)tempObj + "\"") : Integer.toString(((int)tempObj))));
+		  			tokensOut.add(new Token(tempObj instanceof String ? ("\"{" + (String)tempObj + "}\"") : Integer.toString(((int)tempObj))));
 		  			for(int z = j+1; z < tokens.size(); z++) tokensOut.add(tokens.get(z));
 		  			tokens = (ArrayList<Token>)(tokensOut.clone());
 		  			break loop;
@@ -208,7 +270,18 @@ public class Anti_array{// Driver class
 	  if(tokensOut.size() == 0) tokensOut = tokens;
 	  if(tokensOut.size() == 0) tokensOut.add(new Token(false));//make sure the list isn't empty
 	  //System.out.println("results:");
-	  if(tokensOut.size() > 0) if(tokensOut.get(0).type.equals("print")) for(int i = 1; i < tokensOut.size(); i++) System.out.println(tokens.get(i).value instanceof Variable ? (((Variable)tokensOut.get(i).value).get()) : tokensOut.get(i).value);//if the first token is print then print each remaining token
+	  if(tokensOut.size() > 0) if(tokensOut.get(0).type.equals("print")) for(int i = 1; i < tokensOut.size(); i++){//if the first token is print then print each remaining token
+	  	String toPrint = "null";
+	  	if(tokens.get(i).value instanceof Variable){
+	  		toPrint = (((Variable)tokensOut.get(i).value).get()).toString();
+	  	}
+	  	else{
+		  	toPrint = (tokensOut.get(i).value).toString();
+			}
+			//System.out.println(toPrint);
+			String[] toPrintArray = toPrint.split("\\\\n");
+			for(int s = 0; s < toPrintArray.length; s++) System.out.println(toPrintArray[s]);
+	  }
 	  //for(int i = 1; i < tokensOut.size(); i++) System.out.println(tokens.get(i).value instanceof Variable ? (((Variable)tokensOut.get(i).value).get()) : tokensOut.get(i).value);
 	  return tokensOut;
   }
@@ -280,10 +353,16 @@ class Token{//this class is the primary data structure for the program; each Tok
   			type = "bool";
   			value = in.equals("true");
   		}
-  		if(in.charAt(0) == '\"' && in.charAt(in.length()-1) == '\"'){//if String
+  		if(in.charAt(0) == '\"' && in.charAt(1) == '{' && in.charAt(in.length()-2) == '}' && in.charAt(in.length()-1) == '\"'){//if String
   			type = "string";
   			String out = new String(in);
-  			value = out.replace("\"", "");
+  			StringBuilder sb = new StringBuilder(out);
+  			sb.deleteCharAt(0);
+  			sb.deleteCharAt(0);
+  			sb.deleteCharAt(sb.length()-1);
+  			sb.deleteCharAt(sb.length()-1);
+  			out = sb.toString();
+  			value = out;
   		}
   		if(type.equals("undefined")){//if the type still isn't set then set it to "variable"
   			type = "variable";
@@ -432,7 +511,7 @@ class Setter{
 				}
 				else{
 					if((((Variable)objY).get()) instanceof String){//if the variable contains a String
-						y = new Token("\"" + (String)(((Variable)objY).get()) + "\"");
+						y = new Token("\"{" + (String)(((Variable)objY).get()) + "}\"");
 					}
 					else{
 						if((((Variable)objY).get()) instanceof Boolean){//if the variable contains a boolean
@@ -454,7 +533,7 @@ class Setter{
 			}
 			else{
 				if(objY instanceof String){//if y String
-					y = new Token("\"" + (String)objY + "\"");
+					y = new Token("\"{" + (String)objY + "}\"");
 				}
 				else{
 					if(objY instanceof Boolean){//if y boolean
@@ -666,7 +745,14 @@ class Loop{
 		int count = 1;
 		while(true){//loop until this loop is closed by afterStatement or if that is null, then the user
 			if(afterStatement == null) tokensCopy = Anti_array.getNextLine();
-			else tokensCopy = afterStatement.get(count);
+			else{
+				try{
+					tokensCopy = afterStatement.get(count);
+				}
+				catch(IndexOutOfBoundsException e){
+					throw new Error("missing }");
+				}
+			}
   		if(Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false)){//if there is a statement inside then it needs more brackets
   			requiredClosingBrackets++;
   			//System.out.println("statement detected");
