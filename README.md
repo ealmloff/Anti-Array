@@ -18,4 +18,4 @@ loop variableNumber = 0 | variableNumber < 100 | variableNumber ++ |// print eac
 
 == links ==
 
-https://esolangs.org/wiki/Anti-Array#tokens //this contains information on syntax
+https://esolangs.org/wiki/Anti-Array //this contains information on syntax
