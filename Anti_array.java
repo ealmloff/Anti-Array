@@ -746,10 +746,10 @@ class Loop{
 		while(true){//loop until this loop is closed by afterStatement or if that is null, then the user
 			if(afterStatement == null) tokensCopy = Anti_array.getNextLine();
 			else{
-				try{
+  			try{
 					tokensCopy = afterStatement.get(count);
 				}
-				catch(Exception e){
+				catch(IndexOutOfBoundsException e){
 					throw new Error("missing }");
 				}
 			}
@@ -846,11 +846,13 @@ class IfStatement{
 		int count = 1;
 		while(true){//loop until this loop is closed by afterStatement or if that is null, then the user
 			if(afterStatement == null) tokensCopy = Anti_array.getNextLine();
-  		try{
-				tokensCopy = afterStatement.get(count);
-			}
-			catch(Exception e){
-				throw new Error("missing }");
+  		else{
+  			try{
+					tokensCopy = afterStatement.get(count);
+				}
+				catch(IndexOutOfBoundsException e){
+					throw new Error("missing }");
+				}
 			}
   		if(Anti_array.checkForStatements((ArrayList<Token>)tokensCopy.clone(), false)){//if there is a statement inside then it needs more brackets
   			requiredClosingBrackets++;
