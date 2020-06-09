@@ -80,7 +80,7 @@ public class Anti_array{// Driver class
 	  Token[] tokens = new Token[words.length];
 	  for(int i = 0; i < words.length; i++){//turn each word into a token
 	  	//System.out.print(words[i] + ", ");
-  	  tokens[i] = new Token(words[i]);
+  	  if(words[i].length() != 0) tokens[i] = new Token(words[i]);
   	}
   	ArrayList<Token> tokensOut =  new ArrayList<Token>(Arrays.asList(tokens));
   	return tokensOut;
@@ -89,7 +89,9 @@ public class Anti_array{// Driver class
   	String st = "";
 	  st = scan.nextLine();
   	//System.out.println();
-  	return splitCode(st);
+  	ArrayList<Token> nully = new ArrayList<Token>();
+  	nully.add(new Token(false));
+  	return st.length() > 0 ? splitCode(st) : nully;
   }
   static ArrayList<Token> nextLine(){//get, and run a line of code from the user
   	ArrayList<Token> tokens = getNextLine();
@@ -126,6 +128,56 @@ public class Anti_array{// Driver class
 	  	}
 	  }
 	  return modified;
+  }
+  static String[] splitNewLine(String st){
+  	int quotesDepth = 0;
+  	ArrayList<Character> currentWord = new ArrayList<Character>();
+  	String[] wordsList = new String[0];
+	  for(int i = 0; i < st.length(); i++){//keeps track of when its in quotes
+	  	char x = st.charAt(i);
+		  if(x == '}'){
+	  		if(st.charAt(Math.min(i+1, st.length()-1)) == '\"'){
+		  		quotesDepth--;
+		  	}
+		  }
+		  if(st.charAt(Math.max(i-1, 0)) != '}'){
+		  	if(x == '\"'){
+		  		if(st.charAt(i+1) == '{'){
+			  		quotesDepth++;
+			  	}
+			  	else{
+			  		throw new Error("invalid quotes");
+			  	}
+			  }
+		  }
+	  	if(quotesDepth == 0){//if a \n appears outside of quotes end the current String
+	  		if(x == '\\'){
+	  			if(st.charAt(Math.min(i+1, st.length()-1)) == 'n'){
+			  		if(currentWord.size() != 0){
+			  			char[] tempChars = new char[currentWord.size()];
+			 				for(int z = 0; z < currentWord.size(); z++) tempChars[z] = currentWord.get(z).charValue();
+			 				String[] tempStrings = new String[wordsList.length+1];
+			 				for(int z = 0; z < wordsList.length; z++) tempStrings[z] = wordsList[z];
+			 				tempStrings[tempStrings.length-1] = new String(tempChars);
+			  			wordsList = tempStrings;
+			  			currentWord = new ArrayList<Character>();
+			  		}
+			  	}
+	  		}
+	  		else currentWord.add(x);//add the current character when not in quotes and the current character is not a newline
+	  	}
+	  	else currentWord.add(x);//add the current character when in quotes
+	  }
+	  if(currentWord.size() != 0){
+			char[] tempChars = new char[currentWord.size()];
+				for(int z = 0; z < currentWord.size(); z++) tempChars[z] = currentWord.get(z).charValue();
+				String[] tempStrings = new String[wordsList.length+1];
+				for(int z = 0; z < wordsList.length; z++) tempStrings[z] = wordsList[z];
+				tempStrings[tempStrings.length-1] = new String(tempChars);
+			wordsList = tempStrings;
+			currentWord = new ArrayList<Character>();
+		}
+	  return wordsList;
   }
   static ArrayList<Token> run(ArrayList<Token> tokens){//on ( call run(everything inside ()s)
   	Token[] pastTokens;
@@ -189,7 +241,7 @@ public class Anti_array{// Driver class
 	  			if((pastTokens[1].type.equals("asCode") && (pastTokens[0].type.equals("variable") || pastTokens[0].type.equals("string")))){//interpret String after asCode as normal code
 		  			var tempString = pastTokens[0].type.equals("string") ? ((String)(pastTokens[0].value)) : ((String)(((Variable)pastTokens[0].value).get()));
 		  			//System.out.println(tempString);
-						String[] tempStringArray = tempString.split("\\\\n");
+						String[] tempStringArray = splitNewLine(tempString);
 						if(tempStringArray.length == 1){//if there is no newline then 
 							ArrayList<Token> tempTokens = splitCode(tempStringArray[0]);
 			  			for(int i = 0; i < tempTokens.size(); i++) tokensOut.add(tempTokens.get(i));//adds each token to the token list
@@ -279,7 +331,7 @@ public class Anti_array{// Driver class
 		  	toPrint = (tokensOut.get(i).value).toString();
 			}
 			//System.out.println(toPrint);
-			String[] toPrintArray = toPrint.split("\\\\n");
+			String[] toPrintArray = splitNewLine(toPrint);
 			for(int s = 0; s < toPrintArray.length; s++) System.out.println(toPrintArray[s]);
 	  }
 	  //for(int i = 1; i < tokensOut.size(); i++) System.out.println(tokens.get(i).value instanceof Variable ? (((Variable)tokensOut.get(i).value).get()) : tokensOut.get(i).value);
@@ -353,17 +405,24 @@ class Token{//this class is the primary data structure for the program; each Tok
   			type = "bool";
   			value = in.equals("true");
   		}
-  		if(in.charAt(0) == '\"' && in.charAt(1) == '{' && in.charAt(in.length()-2) == '}' && in.charAt(in.length()-1) == '\"'){//if String
-  			type = "string";
-  			String out = new String(in);
-  			StringBuilder sb = new StringBuilder(out);
-  			sb.deleteCharAt(0);
-  			sb.deleteCharAt(0);
-  			sb.deleteCharAt(sb.length()-1);
-  			sb.deleteCharAt(sb.length()-1);
-  			out = sb.toString();
-  			value = out;
-  		}
+  		try{
+	  		if(in.charAt(0) == '\"'){
+	  			if(in.charAt(1) == '{' && in.charAt(in.length()-2) == '}' && in.charAt(in.length()-1) == '\"'){//if String
+		  			type = "string";
+		  			String out = new String(in);
+		  			StringBuilder sb = new StringBuilder(out);
+		  			sb.deleteCharAt(0);
+		  			sb.deleteCharAt(0);
+		  			sb.deleteCharAt(sb.length()-1);
+		  			sb.deleteCharAt(sb.length()-1);
+		  			out = sb.toString();
+		  			value = out;
+		  		}
+	  		}
+	  	}
+	  	catch(StringIndexOutOfBoundsException ex){
+	  		throw new Error(in + "is invalid");
+	  	}
   		if(type.equals("undefined")){//if the type still isn't set then set it to "variable"
   			type = "variable";
   			value = new Variable(in);
@@ -472,19 +531,23 @@ class Conditional{
 				}
 			}
 		}
-		//System.out.println(objX + ", " + y);
+		//System.out.println(objX + ", " + y);\
 		if(type.equals("==")){
 			return x.equals(y);
 		}
 		if(type.equals("!=")){
 			return (x.equals(y) != true);
 		}
-		if(type.equals("<")){
-			return (int)x < (int)y;
+		try{
+			if(type.equals("<")){
+				return (int)x < (int)y;
+			}
+			if(type.equals(">")){
+				return (int)x > (int)y;
+			}
 		}
-		if(type.equals(">")){
-			return (int)x > (int)y;
-		}
+		catch(ClassCastException e){}
+		System.out.println("value of x: " + x + " value of y: " + y);
 	  throw new Error("operation: " + objX.toString() + " " + type + " " + objY.toString() + " is undefined");//if the program got to here then the operation must not have been checked for
 	}
 }
