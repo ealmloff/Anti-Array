@@ -151,7 +151,8 @@ public class Anti_array{// Driver class
 			  }
 		  }
 	  	if(quotesDepth == 0){//if a \n appears outside of quotes end the current String
-	  		if(x == '\\'){
+	  		boolean countChar = true;
+	  		if(x == '\\'){//if this char is part of a newline
 	  			if(st.charAt(Math.min(i+1, st.length()-1)) == 'n'){
 			  		if(currentWord.size() != 0){
 			  			char[] tempChars = new char[currentWord.size()];
@@ -162,9 +163,15 @@ public class Anti_array{// Driver class
 			  			wordsList = tempStrings;
 			  			currentWord = new ArrayList<Character>();
 			  		}
+			  		countChar = false;
 			  	}
 	  		}
-	  		else currentWord.add(x);//add the current character when not in quotes and the current character is not a newline
+	  		if(x == 'n'){//if this char is part of a newline
+	  			if(st.charAt(Math.max(i-1, 0)) == '\\'){
+	  				countChar = false;
+	  			}
+	  		}
+	  		if(countChar) currentWord.add(x);//add the current character when not in quotes and the current character is not a newline
 	  	}
 	  	else currentWord.add(x);//add the current character when in quotes
 	  }
